@@ -31,9 +31,26 @@ const customSynthesizer = new llamaindex.ResponseSynthesizer({
   serviceContext: customServiceContext,
 })
 
+class ImgReader implements llamaindex.BaseReader {
+  loadData(...args: any[]): Promise<llamaindex.Document<llamaindex.Metadata>[]> {
+    throw new Error("Implement me");
+  }
+}
+
 export const getCustomQueryEngine = async (docsPath) => {
-  const documents = await new llamaindex.SimpleDirectoryReader()
-    .loadData({ directoryPath: docsPath })
+  const documents = await new llamaindex
+    .SimpleDirectoryReader()
+    .loadData({
+      directoryPath: docsPath,
+      defaultReader:  new ImgReader(),
+      jpg: new ImgReader(),
+    })
+
+  documents.forEach((doc) => {
+    console.log('doc', doc);
+    console.log(`document (${doc.id_}):`, doc.getText());
+  });
+
   const index = await llamaindex.VectorStoreIndex.fromDocuments(documents)
   const customRetriever = new llamaindex.VectorIndexRetriever({
     index,
